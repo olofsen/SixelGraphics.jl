@@ -1,4 +1,4 @@
-# demonstrates the use of osixelplot to add a plot
+# demonstrates the use of sixelplot to add a plot
 # and overriding the axes limits
 
 using SixelGraphics
