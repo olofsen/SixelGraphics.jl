@@ -1,6 +1,6 @@
 module SixelGraphics
 
-export Screen, sixelplot, osixelplot
+export Screen, Bitmap, sixelplot, clear, putpixel, sixels
 
 const NCOL = 16
 
