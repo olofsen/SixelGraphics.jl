@@ -25,7 +25,7 @@ clear(s.b,63)
 for y=1:h, x=1:w
     # translate numbers [1:w, 1:h] -> -2.5:2.5 + -1:1 im
     c = complex((x-w/2)/(h/2.5), (y-h/2)/(h/2))
-    # call the julia function and plot the distance
+    # call the julia function and use the distance as the color
     putpixel(s.b, div(julia(c,255),16), x-1, y-1)
 end
 
