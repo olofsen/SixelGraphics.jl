@@ -1,6 +1,6 @@
 using SixelGraphics
 
-# inspiration from
+# inspiration and some code from
 # http://mathemartician.blogspot.nl/2012/07/julia-set-in-julia.html
 
 function julia(z, maxiter::Int64)
