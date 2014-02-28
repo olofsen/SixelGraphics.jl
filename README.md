@@ -5,24 +5,26 @@ A module for Julia implementing simple Sixel graphics using XTerm
 XTerm needs to be compiled with --enable-sixel-graphics, run
 with the "-ti 340" option, and with sixelScrolling enabled.
 
-The module exports:
+The module exports (some inspiration was drawn from R's plot()):
 
-function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)", xsize=384, ysize=288,
+function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)",
+                   xsize=384, ysize=288,
                    xlim=[0,0], ylim=[0,0],
                    typ='l', pch=1, clr=2, dclr=[-1,-1,-1],
-                   showframe=true, showlogo=false)
+                   showframe=true, showlogo=false, showsixels=true)
 
 which returns a screen, which may be used for adding another plot:
 
-function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2, clr=3, dclr=[-1,-1,-1])
+function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2,
+                   clr=3, dclr=[-1,-1,-1], showsixels=true)
 
-Some inspiration was drawn from R's plot().
+where the showsixels option may be used to show only a final plot.
 
-Sixel graphics do six lines at a time and therefore ysize has to be a
+Sixel graphics do six lines at a time and therefore ysize is best a
 multiple of six. The console font used is eight bits heigh.
 
-Just a few plotting characters are currently defined. pch=0 is a pixel, and
-pch<0 plots ASCII characters starting from 'a'.
+Just a few plotting characters are currently defined. pch=0 is a pixel,
+and pch<0 plots ASCII characters starting from 'a'.
 
 The (emulated) VT340 has a palette of 16 colors. Color 1 is used for
 the frame. Parameter clr is used for the plot. The color may be
