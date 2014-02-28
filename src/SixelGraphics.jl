@@ -51,7 +51,7 @@ type Font
   fnt::Vector{Uint8}
   function Font()
     fid = open(joinpath(Pkg.dir("SixelGraphics"),"src/Lat7-VGA8.raw"),"r")
-    fnt = read(fid,Int8,2048)
+    fnt = read(fid,Uint8,2048)
     close(fid)
     new(fnt)
   end
@@ -436,7 +436,7 @@ end
 function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)", xsize=384, ysize=288,
                    xlim=[0,0], ylim=[0,0],
                    typ='l', pch=1, clr=2, dclr=[-1,-1,-1],
-                   showframe=true, showlogo=false)
+                   showsixels=true, showframe=true, showlogo=false)
 
   if y==[]
     y = x
@@ -497,12 +497,12 @@ function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)", xsize=384, ysize
 
   drawplot(s, clr, x, y, typ, pch)
 
-  sixels(s)
+  if showsixels; sixels(s); end
 
   return s
 end
 
-function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2, clr=3, dclr=[-1,-1,-1])
+function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2, clr=3, dclr=[-1,-1,-1], showsixels=true)
   if y==[]
     y = x
     n = length(x)
@@ -512,7 +512,7 @@ function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2, clr=3, dclr=[-1,-1,-1]
     setcolor(s.p, clr, dclr[1], dclr[2], dclr[3])
   end
   drawplot(s, clr, x, y, typ, pch)
-  sixels(s)
+  if showsixels; sixels(s); end
 end
 
 end # module
