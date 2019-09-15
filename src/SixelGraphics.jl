@@ -30,7 +30,7 @@ mutable struct Scaler
   end
 end
 
-struct Color
+mutable struct Color
   d::Bool
   r::Int
   g::Int
@@ -112,10 +112,6 @@ function clear(b::Bitmap, v)
 end
 
 function putpixel(b::Bitmap, ic::Int, ix::Int, iy::Int)
-  #ix1::Int
-  #ib1::Int
-  #ib2::Int
-  #ib3::UInt8
 
   if ic<1 || ic>NCOL || ix<0 || ix>=b.nc || iy<0 || iy>=b.nr*6; return; end
 
@@ -166,7 +162,6 @@ function idrawchar(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, c::Char)
 end
 
 function idrawlchar(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, c::Char)
-  #msk::UInt8
   msk = UInt8(0)
 
   ptr = Int(c)*8+1
@@ -440,7 +435,6 @@ function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)", xsize=384, ysize
   if y==[]
     y = x
     n = length(x)
-    #x = linspace(1,n,n)
     x = Array{Int64,1}(1:n)
   end
 
@@ -506,7 +500,6 @@ function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2, clr=3, dclr=[-1,-1,-1]
   if y==[]
     y = x
     n = length(x)
-    #x = linspace(1,n,n)
     x = Array{Int64,1}(1:n)
   end
   if dclr[1]>=0
