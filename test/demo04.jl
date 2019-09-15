@@ -2,7 +2,7 @@
 
 using SixelGraphics
 
-x = linspace(0,6*pi)
-y = sin(x)
+x = Array{Float64}(0:0.1:6*pi)
+y = sin.(x)
 
 s = sixelplot(y, typ='b')
