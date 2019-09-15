@@ -4,9 +4,9 @@ export Screen, Bitmap, sixelplot, clear, putpixel, sixels
 
 const NCOL = 16
 
-# types
+# structs
 
-type Defaults
+struct Defaults
   ax1::Float64
   axy::Float64
   axy2::Float64
@@ -18,7 +18,7 @@ type Defaults
   end
 end
 
-type Scaler
+mutable struct Scaler
   a::Float64
   b::Float64
   mn::Float64
@@ -30,7 +30,7 @@ type Scaler
   end
 end
 
-type Color
+struct Color
   d::Bool
   r::Int
   g::Int
@@ -40,33 +40,33 @@ type Color
   end
 end
 
-type Palette
+struct Palette
   colors::Vector{Color}
   function Palette()
     new([Color() for i=1:NCOL])
   end
 end
 
-type Font
-  fnt::Vector{Uint8}
+struct Font
+  fnt::Vector{UInt8}
   function Font()
-    fid = open(joinpath(Pkg.dir("SixelGraphics"),"src/Lat7-VGA8.raw"),"r")
-    fnt = read(fid,Uint8,2048)
+    fid = open(joinpath(dirname(pathof(SixelGraphics)),"Lat7-VGA8.raw"),"r")
+    fnt = read(fid)
     close(fid)
     new(fnt)
   end
 end
 
-type Bitmap
+struct Bitmap
   nr::Int
   nc::Int
-  planes::Array{Uint8,3}
+  planes::Array{UInt8,3}
   function Bitmap(nr::Int,nc::Int)
-    new(nr,nc,Array(Uint8,NCOL,nr,nc))
+    new(nr,nc,zeros(UInt8, NCOL, nr, nc))
   end
 end
 
-type Screen
+struct Screen
   d::Defaults
   b::Bitmap
   sx::Scaler
@@ -82,11 +82,11 @@ end
 
 function scale(s::Scaler, x)
   if x<s.mn
-    return ifloor(s.mn)
+    return Int(floor(s.mn))
   elseif x>s.mx
-    return ifloor(s.mx)
+    return Int(floor(s.mx))
   end
-  ifloor(s.a+s.b*x)
+  Int(floor(s.a+s.b*x))
 end
 
 function set(s::Scaler,omn,omx,nmn,nmx)
@@ -108,14 +108,14 @@ end
 # Bitmap methods
 
 function clear(b::Bitmap, v)
-  b.planes[:,:,:] = v
+  b.planes[:,:,:] .= v
 end
 
 function putpixel(b::Bitmap, ic::Int, ix::Int, iy::Int)
-  ix1::Int
-  ib1::Int
-  ib2::Int
-  ib3::Uint8
+  #ix1::Int
+  #ib1::Int
+  #ib2::Int
+  #ib3::UInt8
 
   if ic<1 || ic>NCOL || ix<0 || ix>=b.nc || iy<0 || iy>=b.nr*6; return; end
 
@@ -123,7 +123,7 @@ function putpixel(b::Bitmap, ic::Int, ix::Int, iy::Int)
   ib1 = div(iy,6)
   ib2 = iy - ib1*6
   ib1 += 1
-  ib3 = 32 >> ib2
+  ib3 = UInt8(32 >> ib2)
 
   b.planes[ic,ib1,ix1] = 63 + ((b.planes[ic,ib1,ix1] - 63) | ib3)
 end
@@ -140,17 +140,16 @@ function idrawline(b::Bitmap, ic::Int, ix1::Int, iy1::Int, ix2::Int, iy2::Int)
   ay = dy/n
 
   for i = 0:n
-    ix = iround(ix1 + i*ax)
-    iy = iround(iy1 + i*ay)
+    ix = Int(round(ix1 + i*ax))
+    iy = Int(round(iy1 + i*ay))
     putpixel(b,ic,ix,iy)
   end
 end
 
 function idrawchar(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, c::Char)
-  msk::Uint8
-  msk = 0
+  msk = UInt8(0)
 
-  ptr = int(c)*8+1
+  ptr = Int(c)*8+1
   iyj = iy+7
 
   for j = 0:7
@@ -167,10 +166,10 @@ function idrawchar(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, c::Char)
 end
 
 function idrawlchar(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, c::Char)
-  msk::Uint8
-  msk = 0
+  #msk::UInt8
+  msk = UInt8(0)
 
-  ptr = int(c)*8+1
+  ptr = Int(c)*8+1
   ixj = ix
 
   for j = 0:7
@@ -186,12 +185,12 @@ function idrawlchar(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, c::Char)
   end
 end
 
-function idrawstring(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, a::ASCIIString)
+function idrawstring(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, a::String)
   ix1 = ix
   for i=1:length(a); idrawchar(b, f, ic, ix1, iy, a[i]); ix1+=8; end
 end
 
-function idrawlstring(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, a::ASCIIString)
+function idrawlstring(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, a::String)
   iy1 = iy
   for i=1:length(a); idrawlchar(b, f, ic, ix, iy1, a[i]); iy1+=8; end
 end
@@ -211,7 +210,7 @@ function idrawmarker(b::Bitmap, f::Font, ic::Int, ix::Int, iy::Int, m::Int)
     idrawline(b, ic, ix+2,iy+2, ix+2, iy-2)
     idrawline(b, ic, ix+2,iy-2, ix-2, iy-2)
   else
-    idrawchar(b, f, ic, ix-4, iy-4, char(m))
+    idrawchar(b, f, ic, ix-4, iy-4, Char(m))
   end
 end
 
@@ -221,7 +220,7 @@ function drawline(s::Screen, ic::Int, x1, y1, x2, y2)
   idrawline(s.b, ic, scale(s.sx,x1), scale(s.sy,y1), scale(s.sx,x2), scale(s.sy,y2))
 end
 
-function drawstring(s::Screen, ic::Int, x, y, a::ASCIIString, or::Char)
+function drawstring(s::Screen, ic::Int, x, y, a::String, or::Char)
   ix = scale(s.sx,x)
   iy = scale(s.sy,y)
   n = length(a)
@@ -239,7 +238,7 @@ function drawstring(s::Screen, ic::Int, x, y, a::ASCIIString, or::Char)
   end
 end
 
-function drawlstring(s::Screen, ic::Int, x, y, a::ASCIIString, or::Char)
+function drawlstring(s::Screen, ic::Int, x, y, a::String, or::Char)
   ix = scale(s.sx,x)
   iy = scale(s.sy,y)
   n = length(a)
@@ -274,19 +273,19 @@ function drawplot(s::Screen, ic::Int, x::Array, y::Array, typ::Char, pch::Int)
 end
 
 function adjust(mn, mx)
-  d = exp(log(10)*ifloor(log10(mx-mn)))
+  d = exp(log(10)*Int(floor(log10(mx-mn))))
   mn = floor(mn/d)
   mx = ceil(mx/d)
-  nt = iround(mx-mn)
+  nt = Int(round(mx-mn))
   if d>=1
-    [iround(mn*d) iround(mx*d) nt]
+    [Int(round(mn*d)) Int(round(mx*d)) nt]
   else
     [mn*d mx*d nt]
   end
 end
 
-function axes(s::Screen, xlab::ASCIIString, autox::Bool, xmin, xmax,
-                         ylab::ASCIIString, autoy::Bool, ymin, ymax)
+function axes(s::Screen, xlab::String, autox::Bool, xmin, xmax,
+                         ylab::String, autoy::Bool, ymin, ymax)
   drawline(s, 1, s.d.ax1, s.d.axy, s.d.axy2, s.d.axy)
   drawline(s, 1, s.d.ax1, s.d.axy, 0.2, s.d.axy+s.d.tl)
   drawline(s, 1, s.d.axy2, s.d.axy, s.d.axy2, s.d.axy+s.d.tl)
@@ -368,10 +367,10 @@ function csixels(b::Bitmap, eol::Bool, lc::Int, ic::Int, i::Int)
     end
 
     if n>3
-      print('!',n,char(c))
+      print('!',n,Char(c))
       k = j
     else
-      print(char(c))
+      print(Char(c))
       k += 1
     end
   end
@@ -441,7 +440,8 @@ function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)", xsize=384, ysize
   if y==[]
     y = x
     n = length(x)
-    x = linspace(1,n,n)
+    #x = linspace(1,n,n)
+    x = Array{Int64,1}(1:n)
   end
 
   if length(x)!=length(y)
@@ -480,7 +480,7 @@ function sixelplot(x=[], y=[]; title="", xlab="x", ylab="f(x)", xsize=384, ysize
   end
 
   s = Screen(xsize,ysize)
-  clear(s.b,63)
+  clear(s.b, 63)
 
   if dclr[1]>=0
     setcolor(s.p, clr, dclr[1], dclr[2], dclr[3])
@@ -506,7 +506,8 @@ function sixelplot(s::Screen, x=[], y=[]; typ='l', pch=2, clr=3, dclr=[-1,-1,-1]
   if y==[]
     y = x
     n = length(x)
-    x = linspace(1,n,n)
+    #x = linspace(1,n,n)
+    x = Array{Int64,1}(1:n)
   end
   if dclr[1]>=0
     setcolor(s.p, clr, dclr[1], dclr[2], dclr[3])
